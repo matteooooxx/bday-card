@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Letter Surprise</title>
+<style>
+body {
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: linear-gradient(135deg,#ff9a9e,#fad0c4,#fbc2eb,#a18cd1);
+  background-size:400% 400%;
+  animation: gradientBG 15s ease infinite;
+  font-family:'Cursive',sans-serif;
+  overflow:hidden;
+  perspective:1000px;
+}
+@keyframes gradientBG {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+/* Envelope */
+.envelope { width:200px; height:120px; position:relative; cursor:pointer; perspective:600px; z-index:5; }
+.envelope-body { width:100%; height:100%; background:#fff; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.2); overflow:hidden; }
+.envelope-flap { width:100%; height:50%; background:#ff4d6d; position:absolute; top:0; left:0; transform-origin: top center; transform:rotateX(0deg); border-top-left-radius:8px; border-top-right-radius:8px; }
+@keyframes flapSpring { 0%{transform:rotateX(0deg);}60%{transform:rotateX(-200deg);}75%{transform:rotateX(-170deg);}90%{transform:rotateX(-190deg);}100%{transform:rotateX(-180deg);} }
+
+/* Card */
+.card { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) scale(0); background:linear-gradient(145deg,#fff0f5,#ffe6f0); border-radius:25px; width:90%; max-width:380px; padding:40px 20px 60px; text-align:center; box-shadow:0 15px 40px rgba(0,0,0,0.2); z-index:2; transition: transform 0.8s ease-in-out; }
+.card.show { transform:translate(-50%,-50%) scale(1); }
+
+h1 { font-size:2rem; color:#ff4d6d; text-shadow:0 0 10px #ff4d6d,0 0 20px #ff99aa; margin-bottom:15px; animation: glow 2s infinite alternate; }
+@keyframes glow {0%{text-shadow:0 0 5px #ff4d6d,0 0 10px #ff99aa;}100%{text-shadow:0 0 15px #ff4d6d,0 0 30px #ff99aa;}}
+
+p { font-size:1rem; color:#333; line-height:1.5; min-height:60px; }
+
+/* Blinking cursor */
+.cursor { display:inline-block; width:2px; background:#ff4d6d; margin-left:2px; animation: blink 0.8s infinite; vertical-align:text-bottom; }
+@keyframes blink {0%,50%{opacity:1;}51%,100%{opacity:0;}}
+
+/* Hearts & confetti */
+.heart, .confetti{ position:absolute; border-radius:50%; }
+.heart{ transform:rotate(45deg); opacity:0.8; }
+@keyframes fall {0%{transform:translateY(0);opacity:1;}100%{transform:translateY(110vh);opacity:0;}}
+@keyframes drop {0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(300px) rotate(360deg);opacity:0;}}
+
+/* Music button */
+#musicBtn{
+  position:absolute; top:20px; right:20px;
+  padding:10px 20px; font-size:16px;
+  border:none; border-radius:8px;
+  background:#ff4d6d; color:#fff; cursor:pointer;
+  z-index:10;
+}
+</style>
+</head>
+<body>
+
+<!-- Music button -->
+<button id="musicBtn">🎵 Play Music</button>
+
+<!-- Envelope -->
+<div class="envelope" id="envelope">
+  <div class="envelope-body"></div>
+  <div class="envelope-flap" id="flap"></div>
+</div>
+
+<!-- Card -->
+<div class="card" id="card">
+  <h1>Happy Birthday, Ayshapot!</h1>
+  <p id="message"></p>
+</div>
+
+<!-- Music -->
+<audio id="bgMusic" loop>
+  <source src="Bread - Aubrey ( Lyrics).mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const envelope = document.getElementById('envelope');
+const flap = document.getElementById('flap');
+const card = document.getElementById('card');
+const bgMusic = document.getElementById('bgMusic');
+const messageEl = document.getElementById('message');
+const musicBtn = document.getElementById('musicBtn');
+
+// Message text
+const messageText = "Advance Happy 15! 🎉 Hope maging fun at special ang birthday mo sa March 28! 😄";
+
+// Typing effect with blinking cursor and name
+function typeMessage(text, element, speed=25, name="Matthew"){
+  element.textContent = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  element.appendChild(cursor);
+
+  let i=0;
+  const timer = setInterval(()=>{
+    cursor.insertAdjacentText('beforebegin', text.charAt(i));
+    i++;
+    if(i>=text.length){
+      clearInterval(timer);
+      cursor.remove();
+      element.insertAdjacentHTML('beforeend','<br>— '+name);
+    }
+  }, speed);
+}
+
+// Open card
+function openCard(){
+  flap.style.animation = 'flapSpring 1s forwards';
+  setTimeout(()=>{
+    envelope.style.display='none';
+    card.classList.add('show');
+    typeMessage(messageText, messageEl, 25, "Matthew");
+  },1000);
+}
+envelope.addEventListener('click', openCard);
+
+// Music button click
+musicBtn.addEventListener('click', ()=>{
+  bgMusic.play();
+  musicBtn.style.display='none'; // hide after clicked
+});
+
+// Falling hearts
+function createFallingHearts(num){
+  for(let i=0;i<num;i++){
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    const size=Math.random()*12+8;
+    heart.style.width = heart.style.height = size+'px';
+    heart.style.background='#ff4d6d';
+    heart.style.left = Math.random()*(window.innerWidth-size)+'px';
+    heart.style.top = Math.random()*-window.innerHeight+'px';
+    const duration = (Math.random()*5 + 5)+'s';
+    heart.style.animation = `fall ${duration} linear infinite`;
+
+    const before = document.createElement('div');
+    before.style.position='absolute'; before.style.width=before.style.height=size+'px';
+    before.style.background='#ff4d6d'; before.style.borderRadius='50%';
+    before.style.top='-'+size/2+'px'; before.style.left='0px';
+    const after = document.createElement('div');
+    after.style.position='absolute'; after.style.width=after.style.height=size+'px';
+    after.style.background='#ff4d6d'; after.style.borderRadius='50%';
+    after.style.top='0px'; after.style.left='-'+size/2+'px';
+    heart.appendChild(before); heart.appendChild(after);
+
+    document.body.appendChild(heart);
+  }
+}
+
+// Confetti
+function createConfetti(num){
+  for(let i=0;i<num;i++){
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    const size=Math.random()*4 + (window.innerWidth<400?2:4);
+    confetti.style.width=confetti.style.height=size+'px';
+    confetti.style.background='#fff';
+    confetti.style.left=Math.random()*(window.innerWidth-size)+'px';
+    confetti.style.top=Math.random()*window.innerHeight+'px';
+    confetti.style.animation = `drop ${2+Math.random()*2}s linear infinite`;
+    confetti.style.opacity=Math.random();
+    document.body.appendChild(confetti);
+  }
+}
+
+// Initialize hearts and confetti
+createFallingHearts(30);
+createConfetti(20);
+</script>
+</body>
+</html>
